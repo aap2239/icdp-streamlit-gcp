@@ -10,7 +10,10 @@ import pandas as pd
 import plotly
 from io import StringIO
 
+import shap
+from streamlit_shap import st_shap
 from helper_funcs import *
+
 
 def main():
 
@@ -132,8 +135,30 @@ def upload():
             st.dataframe(preds)
 
 def shap_explain():
-    pass
+    st.write("""
+    ## Shapley Values
+    """)
+    
+    with open('/home/aap2239/icdp-streamlit-gcp/assets/shap_value/shap_exp.pkl', 'rb') as pickle_file:
+        explainer = pickle.load(pickle_file)
+    with open('/home/aap2239/icdp-streamlit-gcp/assets/shap_value/shap_values.pkl', 'rb') as pickle_file:
+        shap_values = pickle.load(pickle_file)
+    
+    shap_visual = st.sidebar.selectbox('Select Plot type', 
+                                    (
+#                                         "Bar Chat",
+                                        'Waterfall', 
+                                        'BeeSwarm'))
+    
+#     if shap_visual == 'Bar Chart':
+#         st_shap(shap.plots.bar(shap_values), height=500) 
+    if shap_visual == 'Waterfall':
+        sample_ind = st.number_input("Sample Index", value = 0, min_value = 0, max_value = None, step = 0)
+        st_shap(shap.plots.waterfall(shap_values[sample_ind]), height=500) 
 
+    elif shap_visual == "BeeSwarm":
+        st_shap(shap.plots.beeswarm(shap_values), height=500)
+        
 
 spark = get_spark_session()
 meta_data = load_meta_data()
